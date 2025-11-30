@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Note: URL is handled by prisma.config.ts
+  // Note: URL is handled by prisma.config.ts in Prisma 7
 }
 
 // 1. Tenant (The Store)
@@ -18,6 +18,7 @@ model Tenant {
   // Relationships
   orders      Order[]
   customers   Customer[]
+  products    Product[]
 }
 
 // 2. Customer
@@ -27,34 +28,44 @@ model Customer {
   email             String
   totalSpent        Decimal  @default(0.0)
   
-  // Multi-tenancy: Belongs to a specific Tenant
+  // Multi-tenancy
   tenantId          String
   tenant            Tenant   @relation(fields: [tenantId], references: [id])
   
-  // A customer can have multiple orders
   orders            Order[]
 
-  // Prevent duplicate customers for the same store
   @@unique([shopifyCustomerId, tenantId])
 }
 
-// 3. Order
+// 3. Product (REQUIRED BY PDF)
+model Product {
+  id               String   @id @default(uuid())
+  shopifyProductId String
+  title            String
+  price            Decimal
+  
+  // Multi-tenancy
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([shopifyProductId, tenantId])
+}
+
+// 4. Order
 model Order {
   id             String   @id @default(uuid())
   shopifyOrderId String
   totalPrice     Decimal
   currency       String   @default("USD")
   
-  // Link to Tenant (Data Isolation)
+  // Multi-tenancy
   tenantId       String
   tenant         Tenant   @relation(fields: [tenantId], references: [id])
   
-  // Link to Customer (Optional, because sometimes guest checkout happens)
   customerId     String?
   customer       Customer? @relation(fields: [customerId], references: [id])
   
   createdAt      DateTime @default(now())
   
-  // Prevent duplicate orders for the same store
   @@unique([shopifyOrderId, tenantId])
 }
