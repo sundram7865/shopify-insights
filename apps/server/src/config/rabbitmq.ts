@@ -16,14 +16,7 @@ class RabbitMQService {
     try {
       console.log("🐰 Connecting to RabbitMQ...");
 
-      // FIX: Explicitly type the result of the connect call.
-      // We rely on the library's return type but assert it conforms to the Connection interface 
-      // where it matters. 'as any' is the nuclear option but sometimes necessary with 
-      // strict libraries like this to avoid 'ChannelModel' errors.
-      // However, a safer bet here is just `as Connection` which *should* work if imports are correct.
-      // If `as Connection` failed before, `as unknown as Connection` is the standard workaround.
-      
-      // Let's try the most robust fix:
+    
       const conn = await amqp.connect({
         protocol: "amqp",
         hostname: process.env.RABBITMQ_HOST || 'localhost',
