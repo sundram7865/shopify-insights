@@ -5,7 +5,7 @@ import { startWorker } from './jobs/worker.js';
 import ingestRoutes from './routes/ingest.routes.js';
 import { prisma } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
-
+import analyticsRoutes from './routes/analytics.routes.js';
 const app = express();
 
 app.use(cors());
@@ -14,6 +14,7 @@ app.use(express.json());
 // Mount Routes
 app.use('/api', ingestRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.get('/',(req, res) => res.send('Hellorld!'));
 const init = async () => {
   // 1. Connect to Infrastructure
