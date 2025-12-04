@@ -8,19 +8,23 @@ datasource db {
 }
 
 // ========================
-// 1. Tenant
+// 1. Tenant (User Account)
 // ========================
 model Tenant {
-  id          String     @id @default(uuid())
-  storeName   String
-  storeUrl    String     @unique
-  apiToken    String
-  createdAt   DateTime   @default(now())
+  id        String   @id @default(uuid())
+  
+  email     String   @unique
+  password  String   
+  storeName String?
+  storeUrl  String?  @unique
+  apiToken  String?
+  
+  createdAt DateTime @default(now())
 
   // Relations
-  orders      Order[]
-  customers   Customer[]
-  products    Product[]
+  orders    Order[]
+  customers Customer[]
+  products  Product[]
 }
 
 // ========================
@@ -44,13 +48,13 @@ model Customer {
 // 3. Product
 // ========================
 model Product {
-  id               String   @id @default(uuid())
-  shopifyProductId String
-  title            String
-  price            Decimal
+  id                String   @id @default(uuid())
+  shopifyProductId  String
+  title             String
+  price             Decimal
 
-  tenantId         String
-  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId          String
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
 
   @@unique([shopifyProductId, tenantId])
 }

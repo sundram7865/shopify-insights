@@ -23,3 +23,9 @@ export const handleProductUpdate = async (payload: any[], tenantId: string) => {
   }
   console.log(`✅ [Service] Processed ${payload.length} products`);
 };
+
+
+
+
+
+
