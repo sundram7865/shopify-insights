@@ -4,6 +4,7 @@ import { rabbitMQ } from './config/rabbitmq.js';
 import { startWorker } from './jobs/worker.js';
 import ingestRoutes from './routes/ingest.routes.js';
 import { prisma } from './config/db.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -12,7 +13,8 @@ app.use(express.json());
 
 // Mount Routes
 app.use('/api', ingestRoutes);
-
+app.use('/api/auth', authRoutes);
+app.get('/',(req, res) => res.send('Hellorld!'));
 const init = async () => {
   // 1. Connect to Infrastructure
   await rabbitMQ.connect();

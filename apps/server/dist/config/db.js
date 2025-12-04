@@ -1,17 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-// 1. Load env vars immediately
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 dotenv.config();
-const url = process.env.DATABASE_URL;
-// 2. Safety check
-if (!url) {
-    throw new Error("❌ DATABASE_URL is missing in .env file");
-}
-export const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: url,
-        },
-    },
-});
+export const prisma = new PrismaClient();
 //# sourceMappingURL=db.js.map
