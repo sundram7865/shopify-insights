@@ -3,7 +3,12 @@ import * as AuthController from '../controllers/auth.controller.js';
 
 const router = Router();
 
-router.get('/', AuthController.install);
+
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+
+
+router.get('/shopify', AuthController.install); 
 router.get('/callback', AuthController.callback);
 
 export default router;

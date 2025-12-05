@@ -1,16 +1,24 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import * as AnalyticsController from '../controllers/analytics.controller.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Middleware: Ensure every request has a tenantId
-const requireTenant = (req: any, res: any, next: any) => {
-    const tenantId = req.query.tenantId;
-    if (!tenantId) {
-        return res.status(400).json({ error: "Missing tenantId param" });
+
+const requireTenant = (req: Request, res: Response, next: NextFunction) => {
+    
+    const user = req.user;
+
+    if (!user || !user.tenantId) {
+        return res.status(403).json({ error: "Forbidden: User has no tenant association" });
     }
+
     next();
 };
+
+
+router.use(authenticate);
+
 
 router.get('/stats', requireTenant, AnalyticsController.getStats);
 router.get('/sales-over-time', requireTenant, AnalyticsController.getSalesOverTime);
