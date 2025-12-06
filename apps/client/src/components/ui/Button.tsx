@@ -1,10 +1,12 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// Fix: Extend HTMLMotionProps instead of React.ButtonHTMLAttributes to resolve onDrag type conflict
+interface ButtonProps extends HTMLMotionProps<"button"> {
   variant?: 'primary' | 'outline' | 'ghost' | 'gradient';
+  children: ReactNode;
 }
 
 export const Button = ({ children, onClick, variant = 'primary', className, disabled, type = 'button', ...props }: ButtonProps) => {
