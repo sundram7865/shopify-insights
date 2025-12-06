@@ -5,6 +5,7 @@ import { startWorker } from './jobs/worker.js';
 import ingestRoutes from './routes/ingest.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
+import { startSyncScheduler } from './services/shopifySync.service.js';
 
 const app = express();
 
@@ -27,13 +28,16 @@ const init = async () => {
 
     await rabbitMQ.connect();
     
-
+    
     startWorker();
     
 
     app.listen(3000, () => {
       console.log("🚀 Server running on http://localhost:3000");
     });
+    
+    startSyncScheduler();
+    
   } catch (error) {
     console.error("Failed to start app:", error);
     process.exit(1);
