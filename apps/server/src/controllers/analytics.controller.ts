@@ -1,31 +1,37 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/db.js';
 
-// Helper: Standardize date handling
 const parseDate = (dateStr: any) => (dateStr ? new Date(dateStr) : undefined);
-
 
 export const getStats = async (req: Request, res: Response) => {
   try {
     const { tenantId } = req.query as any;
 
-    const [totalOrders, totalCustomers, totalRevenue] = await Promise.all([
+    const [totalOrders, totalCustomers, totalRevenue, abandonedCarts] = await Promise.all([
+      // Note: Add 'cancelledAt: null' to where clause after updating schema and running 'npx prisma generate'
       prisma.order.count({ where: { tenantId } }),
       prisma.customer.count({ where: { tenantId } }),
       prisma.order.aggregate({
         where: { tenantId },
         _sum: { totalPrice: true }
+      }),
+      prisma.checkout.aggregate({
+        where: { tenantId, isCompleted: false },
+        _sum: { totalPrice: true }
       })
     ]);
 
-    const revenue = Number(totalRevenue._sum.totalPrice || 0);
+    // Fix: Safely access _sum with optional chaining
+    const revenue = Number(totalRevenue._sum?.totalPrice ?? 0);
+    const lostRevenue = Number(abandonedCarts._sum?.totalPrice ?? 0);
     const aov = totalOrders > 0 ? (revenue / totalOrders).toFixed(2) : 0;
 
     res.json({
       totalOrders,
       totalCustomers,
       totalRevenue: revenue,
-      averageOrderValue: Number(aov)
+      averageOrderValue: Number(aov),
+      lostRevenue
     });
   } catch (error) {
     console.error("Stats Error:", error);
@@ -33,12 +39,11 @@ export const getStats = async (req: Request, res: Response) => {
   }
 };
 
-// 2. Get Sales Trend (With Date Filtering)
 export const getSalesOverTime = async (req: Request, res: Response) => {
   try {
     const { tenantId, startDate, endDate } = req.query as any;
 
-    // Build dynamic filter
+    // Note: Add 'cancelledAt: null' here after schema update
     const dateFilter: any = { tenantId };
     if (startDate || endDate) {
       dateFilter.createdAt = {};
@@ -52,14 +57,12 @@ export const getSalesOverTime = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'asc' }
     });
 
-    // Group by Date (YYYY-MM-DD)
     const salesByDate: Record<string, number> = {};
     orders.forEach(order => {
       const date = order.createdAt.toISOString().split('T')[0] || '' ;
       salesByDate[date] = (salesByDate[date] || 0) + Number(order.totalPrice);
     });
 
-    // Format for Chart.js
     const chartData = Object.entries(salesByDate).map(([date, sales]) => ({
       date,
       sales
@@ -72,34 +75,130 @@ export const getSalesOverTime = async (req: Request, res: Response) => {
   }
 };
 
-// 3. Get Top 5 Customers
+export const getCustomers = async (req: Request, res: Response) => {
+    try {
+        const tenantId = req.user?.tenantId as string;
+
+        if (!tenantId) {
+            return res.status(400).json({ error: "Tenant ID is missing" });
+        }
+
+        // 1. Fetch all customers
+        const customers = await prisma.customer.findMany({
+            where: { tenantId },
+            orderBy: { id: 'desc' },
+            include: {
+                _count: {
+                    select: { orders: true }
+                }
+            }
+        });
+
+        // 2. Aggregate actual lifetime spend from the Order table
+        const spendStats = await prisma.order.groupBy({
+            by: ['customerId'],
+            where: {
+                tenantId,
+                customerId: { in: customers.map(c => c.id) }
+            },
+            _sum: { totalPrice: true }
+        });
+
+        // 3. Merge spend data into customer list
+        const enrichedCustomers = customers.map(customer => {
+            const stats = spendStats.find(s => s.customerId === customer.id);
+            return {
+                ...customer,
+                // Flattening these for easier access in UI
+                totalOrders: customer._count.orders, 
+                totalSpent: Number(stats?._sum.totalPrice ?? 0) 
+            };
+        });
+
+        res.json(enrichedCustomers);
+    } catch (error) {
+        console.error("Get Customers Error:", error);
+        res.status(500).json({ error: "Failed to fetch customers" });
+    }
+};
+
+export const getProducts = async (req: Request, res: Response) => {
+    try {
+      
+        const tenantId = req.user?.tenantId as string;
+
+        if (!tenantId) {
+            return res.status(400).json({ error: "Tenant ID is missing" });
+        }
+
+        const products = await prisma.product.findMany({
+            where: { tenantId },
+           
+            orderBy: { id: 'desc' } 
+        });
+        res.json(products);
+    } catch (error) {
+        console.error("Get Products Error:", error);
+        res.status(500).json({ error: "Failed to fetch products" });
+    }
+};
 export const getTopCustomers = async (req: Request, res: Response) => {
   try {
     const { tenantId } = req.query as any;
 
-    const topCustomers = await prisma.customer.findMany({
-      where: { tenantId },
-      orderBy: { totalSpent: 'desc' },
-      take: 5,
-      select: { 
-        email: true, 
-        totalSpent: true, 
-        _count: { select: { orders: true } } 
-      }
+    // Logic: Group by CustomerID inside the Order table and sum the prices
+    const topSpenders = await prisma.order.groupBy({
+      by: ['customerId'],
+      where: {
+        tenantId,
+        customerId: { not: null },
+        // Note: Add 'cancelledAt: null' here after schema update
+      },
+      _sum: {
+        totalPrice: true
+      },
+      _count: {
+        id: true
+      },
+      orderBy: {
+        _sum: {
+          totalPrice: 'desc'
+        }
+      },
+      take: 5
     });
 
-    res.json(topCustomers.map(c => ({
-      email: c.email,
-      totalSpent: c.totalSpent,
-      orders: c._count.orders
-    })));
+    const customerIds = topSpenders.map(g => g.customerId as string);
+    
+    // Fetch user details (emails) for these IDs
+    const customers = await prisma.customer.findMany({
+      where: {
+        id: { in: customerIds },
+        tenantId
+      },
+      select: { id: true, email: true }
+    });
+
+    const result = topSpenders.map(spender => {
+      const customerInfo = customers.find(c => c.id === spender.customerId);
+      // Fix: Cast _count to any to resolve TS error 'Property id does not exist on type true'
+      const orderCount = (spender._count as any)?.id ?? 0;
+      
+      return {
+        email: customerInfo?.email || "Unknown",
+        // Fix: Safely access _sum
+        totalSpent: Number(spender._sum?.totalPrice ?? 0),
+        orders: orderCount
+      };
+    });
+
+    res.json(result);
   } catch (error) {
     console.error("Top Customers Error:", error);
     res.status(500).json({ error: "Failed to fetch top customers" });
   }
 };
 
-// 4. Get Customer Segments (Repeat vs New)
 export const getCustomerSegments = async (req: Request, res: Response) => {
   try {
     const { tenantId } = req.query as any;

@@ -24,5 +24,7 @@ router.get('/stats', requireTenant, AnalyticsController.getStats);
 router.get('/sales-over-time', requireTenant, AnalyticsController.getSalesOverTime);
 router.get('/top-customers', requireTenant, AnalyticsController.getTopCustomers);
 router.get('/customer-segments', requireTenant, AnalyticsController.getCustomerSegments);
+router.get('/customers', requireTenant, AnalyticsController.getCustomers);
+router.get('/products', requireTenant, AnalyticsController.getProducts);
 
 export default router;
