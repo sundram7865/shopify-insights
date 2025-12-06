@@ -14,6 +14,7 @@ export default function DashboardLayout() {
     { label: 'Orders', icon: ShoppingBag, path: '/orders' },
     { label: 'Products', icon: Package, path: '/products' },
     { label: 'Customers', icon: Users, path: '/customers' },
+    { label: 'Checkouts', icon: LogOut, path: '/checkouts' },
   ];
 
   return (

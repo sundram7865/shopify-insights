@@ -9,6 +9,7 @@ import ProductsPage from './pages/dashboard/ProductsPage';
 import CustomersPage from './pages/dashboard/CustomersPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Orders from './pages/dashboard/Orders';
+import AbandonedCheckouts from './pages/dashboard/AbandonedCheckouts';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/customers" element={<CustomersPage />} />
              <Route path="/orders" element={<Orders />} />
+             <Route path="/checkouts" element={<AbandonedCheckouts />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" />} />

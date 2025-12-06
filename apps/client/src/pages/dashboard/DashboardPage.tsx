@@ -139,9 +139,7 @@ export default function DashboardPage() {
             <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
           </div>
 
-          <Button variant="outline" onClick={() => setShowDebug(!showDebug)}>
-            <Bug className="h-4 w-4 mr-2" /> Debug
-          </Button>
+         
           <Button variant="outline" onClick={() => fetchData(false)} disabled={isRefreshing}>
             <RefreshCcw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} /> Refresh
           </Button>
@@ -237,11 +235,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {showDebug && (
-        <div className="mt-8 p-4 bg-slate-900 text-slate-300 rounded-lg text-xs font-mono">
-          <pre>{JSON.stringify({ dateRange, data }, null, 2)}</pre>
-        </div>
-      )}
     </div>
   );
 }
