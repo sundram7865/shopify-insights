@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import  { useState, useEffect, useCallback, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { ShoppingBag, Users, DollarSign, TrendingUp, Bug, RefreshCcw, Calendar } from 'lucide-react';
+import { ShoppingBag, Users, DollarSign, TrendingUp,  RefreshCcw, Calendar } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../lib/axios';
 import { Card } from '../../components/ui/Card';
@@ -43,7 +43,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>({ stats: null, sales: [], top: [], segments: null });
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
+
   const [dateRange, setDateRange] = useState<DateRange>('30d');
 
   const getDateParams = (range: DateRange) => {
