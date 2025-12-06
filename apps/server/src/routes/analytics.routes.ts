@@ -27,4 +27,5 @@ router.get('/customer-segments', requireTenant, AnalyticsController.getCustomerS
 router.get('/customers', requireTenant, AnalyticsController.getCustomers);
 router.get('/products', requireTenant, AnalyticsController.getProducts);
 router.get('/orders', requireTenant, AnalyticsController.getOrders);
+router.get('/checkouts', requireTenant, AnalyticsController.getAbandonedCheckouts);
 export default router;
