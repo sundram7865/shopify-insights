@@ -9,8 +9,11 @@ import analyticsRoutes from './routes/analytics.routes.js';
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-
+app.use(express.json({
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 app.use('/api', ingestRoutes);     
 app.use('/api/auth', authRoutes);   

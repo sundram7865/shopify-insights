@@ -2,7 +2,7 @@ import { rabbitMQ } from '../config/rabbitmq.js';
 import * as ProductService from '../services/product.service.js';
 import * as OrderService from '../services/order.service.js';
 import * as CustomerService from '../services/customer.service.js';
-
+import * as CheckoutService from '../services/checkout.service.js';
 export const startWorker = async () => {
   const channel = rabbitMQ.getChannel();
   console.log("👷 Worker started. Listening for Shopify events...");
@@ -28,8 +28,8 @@ export const startWorker = async () => {
           break;
           
         case 'CHECKOUTS':
-          // Bonus: Just logging for now to prove we received it
-          console.log(`🛒 Checkout event logged for ${tenantId}`);
+          
+          await CheckoutService.handleCheckoutUpdate(payload, tenantId);
           break;
 
         default:

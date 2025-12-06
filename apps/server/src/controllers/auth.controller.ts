@@ -10,6 +10,7 @@ const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET;
 const SCOPES = process.env.SHOPIFY_SCOPES;
 const HOST = process.env.HOST;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -34,7 +35,11 @@ export const register = async (req: Request, res: Response) => {
       }
     });
 
-    const token = jwt.sign({ id: tenant.id, email: tenant.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      { id: tenant.id, email: tenant.email, tenantId: tenant.id }, 
+      JWT_SECRET, 
+      { expiresIn: '7d' }
+    );
 
     res.json({ message: "Registration successful", token, tenantId: tenant.id });
   } catch (error) {
@@ -57,7 +62,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: tenant.id, email: tenant.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      { id: tenant.id, email: tenant.email, tenantId: tenant.id }, 
+      JWT_SECRET, 
+      { expiresIn: '7d' }
+    );
+    
     const isShopifyConnected = !!tenant.apiToken;
 
     res.json({ 
@@ -106,6 +116,12 @@ export const callback = async (req: Request, res: Response) => {
 
     const accessToken = tokenResponse.data.access_token;
 
+    const existingTenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+    if (!existingTenant) {
+        console.error(`❌ Tenant ID ${tenantId} not found in database.`);
+        return res.status(404).send(`Error: Tenant ID ${tenantId} does not exist. Please register first.`);
+    }
+
     const tenant = await prisma.tenant.update({
       where: { id: tenantId },
       data: {
@@ -128,8 +144,7 @@ export const callback = async (req: Request, res: Response) => {
       await registerWebhook(shop, accessToken, topic, tenant.id);
     }
 
-    res.redirect(`http://localhost:5173/dashboard?connected=true`);
-
+     res.redirect(`${FRONTEND_URL}/dashboard?connected=true`);
   } catch (error) {
     console.error('❌ OAuth Failed:', error);
     res.status(500).send('Failed to connect store. Please try again.');
@@ -142,7 +157,8 @@ async function registerWebhook(shop: string, token: string, topic: string, tenan
     await axios.post(`https://${shop}/admin/api/2024-01/webhooks.json`, {
       webhook: { topic, address: webhookUrl, format: 'json' }
     }, { headers: { 'X-Shopify-Access-Token': token } });
-    console.log(`⚓ Webhook registered: ${topic}`);
+    
+    console.log(`⚓ Webhook registered: ${topic} -> ${webhookUrl}`);
   } catch (err: any) {
     const errorMsg = err.response?.data?.errors || err.message;
     console.log(`⚠️  Skipped ${topic}: ${JSON.stringify(errorMsg)}`);

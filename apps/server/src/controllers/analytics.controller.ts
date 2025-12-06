@@ -4,7 +4,7 @@ import { prisma } from '../config/db.js';
 // Helper: Standardize date handling
 const parseDate = (dateStr: any) => (dateStr ? new Date(dateStr) : undefined);
 
-// 1. Get Headline Stats (Revenue, Orders, Customers, AOV)
+
 export const getStats = async (req: Request, res: Response) => {
   try {
     const { tenantId } = req.query as any;

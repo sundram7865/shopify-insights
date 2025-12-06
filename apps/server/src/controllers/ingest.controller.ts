@@ -14,20 +14,30 @@ export const handleWebhook = async (req: Request, res: Response) => {
       return res.status(500).send('Server Configuration Error');
     }
 
-    // Verify authenticity
+    
+    const rawBody = (req as any).rawBody;
+
+    if (!rawBody) {
+       console.error('❌ No raw body found. Ensure express.json({ verify: ... }) is set in app.ts');
+       
+       return res.status(500).send('Internal Server Error: Raw body missing');
+    }
+
     const digest = crypto
       .createHmac('sha256', secret)
-      .update(JSON.stringify(req.body))
+      .update(rawBody) 
       .digest('base64');
 
     if (digest !== hmac) {
       console.error('❌ Unauthorized webhook signature mismatch');
+      console.log(`Expected: ${hmac}`);
+      console.log(`Calculated: ${digest}`);
       return res.status(401).send('Unauthorized');
     }
 
     const tenantId = req.query.tenantId as string; 
     const shopifyTopic = topic as string;
-    const payload = req.body;
+    const payload = req.body; 
 
     console.log(`📥 Received webhook: '${shopifyTopic}' for Tenant: ${tenantId}`);
 

@@ -12,7 +12,6 @@ datasource db {
 // ========================
 model Tenant {
   id        String   @id @default(uuid())
-  
   email     String   @unique
   password  String   
   storeName String?
@@ -25,6 +24,7 @@ model Tenant {
   orders    Order[]
   customers Customer[]
   products  Product[]
+   checkouts Checkout[]
 }
 
 // ========================
@@ -77,4 +77,22 @@ model Order {
   createdAt      DateTime @default(now())
 
   @@unique([shopifyOrderId, tenantId])
+}
+
+model Checkout {
+  id                String   @id @default(uuid())
+  shopifyCheckoutId String
+  email             String?
+  totalPrice        Decimal
+  currency          String   @default("USD")
+  abandonedCheckoutUrl String?
+  isCompleted       Boolean  @default(false)
+
+  tenantId          String
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt // Tracks when they last touched the cart
+
+  @@unique([shopifyCheckoutId, tenantId])
 }
