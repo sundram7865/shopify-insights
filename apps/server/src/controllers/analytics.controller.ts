@@ -226,3 +226,44 @@ export const getCustomerSegments = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch segments" });
   }
 };
+
+export const getOrders = async (req: Request, res: Response) => {
+    try {
+        const tenantId = req.user?.tenantId as string;
+
+        if (!tenantId) {
+            return res.status(400).json({ error: "Tenant ID is missing" });
+        }
+
+        const orders = await prisma.order.findMany({
+            where: { tenantId },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                customer: {
+                    select: {
+                        email: true
+                        // Removed firstName/lastName as they don't exist in your current schema
+                    }
+                }
+            }
+        });
+
+        // Format data for the UI Table
+        const formattedOrders = orders.map(order => ({
+            id: order.id,
+            orderNumber: `#${order.shopifyOrderId}`,
+            date: order.createdAt,
+            // Since we don't have names, we use Email or "Guest"
+            customer: order.customer?.email || 'Guest',
+            email: order.customer?.email || 'N/A',
+            total: Number(order.totalPrice),
+            paymentStatus: 'Paid',
+            items: 1 
+        }));
+
+        res.json(formattedOrders);
+    } catch (error) {
+        console.error("Get Orders Error:", error);
+        res.status(500).json({ error: "Failed to fetch orders" });
+    }
+};

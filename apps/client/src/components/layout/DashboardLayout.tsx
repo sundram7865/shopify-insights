@@ -1,6 +1,5 @@
-
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Package } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Package, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
@@ -12,6 +11,7 @@ export default function DashboardLayout() {
 
   const navItems = [
     { label: 'Overview', icon: LayoutDashboard, path: '/dashboard' },
+    { label: 'Orders', icon: ShoppingBag, path: '/orders' },
     { label: 'Products', icon: Package, path: '/products' },
     { label: 'Customers', icon: Users, path: '/customers' },
   ];

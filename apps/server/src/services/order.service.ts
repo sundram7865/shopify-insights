@@ -39,7 +39,18 @@ export const handleOrderUpdate = async (payload: any[], tenantId: string) => {
         tenantId: tenantId
       }
     });
-    
+    if (order.checkout_id) {
+        await prisma.checkout.updateMany({
+            where: {
+                shopifyCheckoutId: String(order.checkout_id),
+                tenantId: tenantId
+            },
+            data: {
+                isCompleted: true
+            }
+        });
+        console.log(`✅ [Service] Linked Checkout ${order.checkout_id} marked as Completed`);
+    }
     console.log(`✅ [Service] Order ${order.id} saved (Customer Linked: ${!!dbCustomerId})`);
   }
 };

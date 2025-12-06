@@ -26,5 +26,5 @@ router.get('/top-customers', requireTenant, AnalyticsController.getTopCustomers)
 router.get('/customer-segments', requireTenant, AnalyticsController.getCustomerSegments);
 router.get('/customers', requireTenant, AnalyticsController.getCustomers);
 router.get('/products', requireTenant, AnalyticsController.getProducts);
-
+router.get('/orders', requireTenant, AnalyticsController.getOrders);
 export default router;
