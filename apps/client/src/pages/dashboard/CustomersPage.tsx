@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import api from '../../lib/axios';
 import { useAuth } from '../../context/AuthContext';
 import { Card } from '../../components/ui/Card';
-import { Users, RefreshCcw } from 'lucide-react';
+import {  RefreshCcw } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
 export default function CustomersPage() {
