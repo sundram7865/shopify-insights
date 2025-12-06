@@ -16,21 +16,24 @@ class RabbitMQService {
     try {
       console.log("🐰 Connecting to RabbitMQ...");
 
-    
-      const conn = await amqp.connect({
-        protocol: "amqp",
-        hostname: process.env.RABBITMQ_HOST || 'localhost',
-        port: parseInt(process.env.RABBITMQ_PORT || '5672'),
-        username: process.env.RABBITMQ_USER || 'user',
-        password: process.env.RABBITMQ_PASSWORD || 'password',
-      });
+      // Use the full URL if provided (Easiest for CloudAMQP)
+      // OR construct it from individual parts (Easiest for AWS/Docker)
+      let connectionUrl = process.env.RABBITMQ_URL;
 
-      // We assign it to the class property which is typed as Connection.
-      // The cast 'as unknown as Connection' handles the structural mismatch.
+      if (!connectionUrl) {
+        const host = process.env.RABBITMQ_HOST || 'localhost';
+        const port = process.env.RABBITMQ_PORT || '5672';
+        const user = process.env.RABBITMQ_USER || 'guest';
+        const pass = process.env.RABBITMQ_PASSWORD || 'guest';
+        connectionUrl = `amqp://${user}:${pass}@${host}:${port}`;
+      }
+
+      const conn = await amqp.connect(connectionUrl);
+
+
       this.connection = conn as unknown as Connection;
 
-      // Use the local variable 'conn' which TS infers correctly from the library
-      // This is the key: don't use 'this.connection' immediately for creation
+     
       const channel = await conn.createChannel();
       this.channel = channel;
 
