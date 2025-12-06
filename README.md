@@ -6,8 +6,8 @@ A high-performance, event-driven system designed to ingest, process, and visuali
 
 ## 🔗 Live Demonstration
 
-- **Frontend :** https://shopify-insights-seven.vercel.app  
-- **Backend :** https://shopify-insights-cg9g.onrender.com  
+- **Frontend :** https://shopify-insights-seven.vercel.app 
+- **Backend :** https://shopify-insights-cg9g.onrender.com/
 
 
 ---
@@ -158,4 +158,5 @@ npm run dev
 cd apps/client
 npm run dev
 ```
+
 
