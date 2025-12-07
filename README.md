@@ -159,4 +159,12 @@ cd apps/client
 npm run dev
 ```
 
+###  Snapshots
+<img width="1919" height="911" alt="Screenshot 2025-12-07 082355" src="https://github.com/user-attachments/assets/683a6f46-8eac-4092-8a80-1668fb5898fd" />
+
+<img width="1916" height="907" alt="Screenshot 2025-12-07 082800" src="https://github.com/user-attachments/assets/4e0b2a7d-1551-46ad-89ee-b49a5f5fd4c8" />
+
+<img width="1895" height="914" alt="Screenshot 2025-12-07 082820" src="https://github.com/user-attachments/assets/c66708b9-da6d-4da3-b566-f1c26ca9be40" />
+
+
 
